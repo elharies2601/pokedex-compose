@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">Pokedex</string>
+    <string name="back">Back</string>
+    <string name="favorite">Favorite</string>
+    <string name="pokemon_id_format">#%03d</string>
+    <string name="about">About</string>
+    <string name="base_stats">Base Stats</string>
+    <string name="evolution">Evolution</string>
+    <string name="moves">Moves</string>
+    <string name="species">Species</string>
+    <string name="height">Height</string>
+    <string name="weight">Weight</string>
+    <string name="abilities">Abilities</string>
+    <string name="breeding">Breeding</string>
+    <string name="gender">Gender</string>
+    <string name="egg_groups">Egg Groups</string>
+    <string name="egg_cycles">Egg Cycles</string>
+    <string name="male_percentage">%d%%</string>
+    <string name="female_percentage">%d%%</string>
+    <string name="title_pokedex">Pokedex</string>
+    <string name="title_login">Login</string>
+    <string name="email">E-mail</string>
+    <string name="password">Password</string>
+    <string name="atau">Atau ?</string>
+    <string name="title_register">Register</string>
+    <string name="label_nama">Nama</string>
+    <string name="pokemon_tidak_ditemukan">Pokemon Tidak Ditemukan</string>
+    <string name="coba_lagi">Coba lagi</string>
+</resources>
