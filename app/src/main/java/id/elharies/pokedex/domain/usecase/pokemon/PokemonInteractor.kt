@@ -1,4 +1,4 @@
-package id.elharies.pokedex.domain.usecase.user
+package id.elharies.pokedex.domain.usecase.pokemon
 
 import androidx.paging.PagingData
 import androidx.paging.map

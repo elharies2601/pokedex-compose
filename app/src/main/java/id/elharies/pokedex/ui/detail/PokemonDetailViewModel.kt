@@ -3,7 +3,7 @@ package id.elharies.pokedex.ui.detail
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import id.elharies.pokedex.base.BaseViewModel
-import id.elharies.pokedex.domain.usecase.user.PokemonUseCase
+import id.elharies.pokedex.domain.usecase.pokemon.PokemonUseCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
