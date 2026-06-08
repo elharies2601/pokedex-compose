@@ -3,6 +3,7 @@ package id.elharies.pokedex.data.mapper
 import id.elharies.pokedex.data.local.entity.PokemonDetailEntity
 import id.elharies.pokedex.data.remote.dto.DetailPokemonResponse
 import id.elharies.pokedex.domain.model.DetailPokemon
+import id.elharies.pokedex.domain.model.PokemonStat
 import id.elharies.pokedex.util.Constants
 import id.elharies.pokedex.util.parseIdFromUrl
 
@@ -26,9 +27,9 @@ fun PokemonDetailEntity.toDomain(): DetailPokemon {
         name = name,
         imageUrl = imageUrl,
         baseExperience = baseExperience,
-        weight = weight/10.0,
-        height = height/10.0,
-        stats = stats,
+        weight = weight / 10.0,
+        height = height / 10.0,
+        stats = stats.map { PokemonStat(name = it.stat.name, baseStat = it.baseStat) },
         types = types.map { it.type.name }
     )
 }

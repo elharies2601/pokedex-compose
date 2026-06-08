@@ -14,12 +14,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -27,6 +31,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -44,6 +49,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -54,8 +60,8 @@ import id.elharies.elutility.compose.component.LoadingScreen
 import id.elharies.pokedex.R
 import id.elharies.pokedex.component.ImagePokemon
 import id.elharies.pokedex.component.LoadingDialog
-import id.elharies.pokedex.data.remote.dto.StatsResponse
 import id.elharies.pokedex.domain.model.DetailPokemon
+import id.elharies.pokedex.domain.model.PokemonStat
 import id.elharies.pokedex.icons.IconHealthCross
 import id.elharies.pokedex.icons.IconRunning
 import id.elharies.pokedex.icons.IconShield
@@ -68,6 +74,7 @@ import id.elharies.pokedex.ui.theme.LightGreen
 import id.elharies.pokedex.ui.theme.LightYellow
 import id.elharies.pokedex.ui.theme.PokedexTheme
 import id.elharies.pokedex.ui.theme.Red
+import id.elharies.pokedex.util.ColorPokemon
 
 @Composable
 fun PokemonDetailScreen(
@@ -81,61 +88,235 @@ fun PokemonDetailScreen(
         viewModel.getPokemonDetail(id)
     }
 
-    PokemonDetailContent(uiState = uiState, onBackClick = onBackClick)
+    PokemonDetailContent(
+        uiState = uiState,
+        onBackClick = onBackClick,
+        onRetry = { viewModel.retry(id) }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PokemonDetailContent(
     uiState: PokemonDetailUiState = PokemonDetailUiState(),
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onRetry: () -> Unit = {}
 ) {
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
-        TopAppBar(title = {}, navigationIcon = {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_back),
-                    contentDescription = stringResource(R.string.back),
-                    modifier = Modifier.size(24.dp),
-                    tint = Color.White
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = {},
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_back),
+                            contentDescription = stringResource(R.string.back),
+                            modifier = Modifier.size(24.dp),
+                            tint = if (uiState.errorType != null) Black else Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent
                 )
-            }
-        }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent))
-    }, containerColor = uiState.detailPokemon.backgroundColor) {
+            )
+        },
+        containerColor = if (uiState.errorType != null) {
+            Color.White
+        } else {
+            val typeName = uiState.detailPokemon.types.firstOrNull() ?: "unknown"
+            ColorPokemon.entries.find { it.typeName == typeName }?.color ?: Color.White
+        }
+    ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(
-                    top = it.calculateTopPadding(), start = it.calculateStartPadding(
+                    top = paddingValues.calculateTopPadding(), start = paddingValues.calculateStartPadding(
                         LayoutDirection.Ltr
-                    ), end = it.calculateEndPadding(LayoutDirection.Ltr)
+                    ), end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
                 )
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-//                DetailHeader(
-//                    onBackClick = onBackClick,
-//                    onFavoriteClick = onFavoriteClick
-//                )
-                PokemonInfo(
-                    name = uiState.detailPokemon.name,
-                    id = uiState.detailPokemon.id,
-                    types = uiState.detailPokemon.types
-                )
-//                Spacer(modifier = Modifier.height(160.dp))
-                // Pokemon Image floating
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.TopCenter
-                ) {
-                    PokemonImagePlaceholder(modifier = Modifier.size(240.dp), url = uiState.detailPokemon.imageUrl)
+            when {
+                uiState.errorType == DetailErrorType.NoConnection -> {
+                    OfflineErrorState(
+                        errorMessage = uiState.errorMessage ?: stringResource(R.string.no_connection_message),
+                        onRetry = onRetry,
+                        onBack = onBackClick
+                    )
                 }
-                DetailContent(pokemon = uiState.detailPokemon)
+                uiState.errorType != null -> {
+                    NotFoundErrorState(
+                        errorMessage = uiState.errorMessage ?: stringResource(R.string.general_error),
+                        onBack = onBackClick
+                    )
+                }
+                else -> {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        PokemonInfo(
+                            name = uiState.detailPokemon.name,
+                            id = uiState.detailPokemon.id,
+                            types = uiState.detailPokemon.types
+                        )
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.TopCenter
+                        ) {
+                            PokemonImagePlaceholder(
+                                modifier = Modifier.size(240.dp),
+                                url = uiState.detailPokemon.imageUrl
+                            )
+                        }
+                        DetailContent(pokemon = uiState.detailPokemon)
+                    }
+                }
             }
         }
     }
 
     LoadingDialog(isShow = uiState.isLoading)
+}
+
+@Composable
+private fun OfflineErrorState(
+    errorMessage: String,
+    onRetry: () -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_wifi_off),
+            contentDescription = stringResource(R.string.no_connection),
+            modifier = Modifier.size(120.dp),
+            tint = Color.Gray.copy(alpha = 0.4f)
+        )
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        Text(
+            text = stringResource(R.string.no_connection),
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Black
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = errorMessage,
+            fontSize = 14.sp,
+            color = Color.Gray,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            textAlign = TextAlign.Center
+        )
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        Button(
+            onClick = onRetry,
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = 300.dp)
+                .height(48.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = LightGreen
+            )
+        ) {
+            Text(
+                text = stringResource(R.string.retry),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        TextButton(
+            onClick = onBack,
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = 300.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.back_to_list),
+                fontSize = 14.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun NotFoundErrorState(
+    errorMessage: String,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_pokeball_grey),
+            contentDescription = stringResource(R.string.not_found),
+            modifier = Modifier
+                .size(120.dp)
+                .alpha(0.3f),
+            tint = Color.Gray
+        )
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        Text(
+            text = stringResource(R.string.pokemon_tidak_ditemukan),
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Black
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = errorMessage,
+            fontSize = 14.sp,
+            color = Color.Gray,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            textAlign = TextAlign.Center
+        )
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        Button(
+            onClick = onBack,
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = 300.dp)
+                .height(48.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = LightGreen
+            )
+        ) {
+            Text(
+                text = stringResource(R.string.back_to_list),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
 }
 
 @Composable
@@ -341,16 +522,10 @@ private fun PokemonDetailContentPreview() {
         baseExperience = 100,
         weight = 10.0,
         height = 10.0,
-        stats = listOf(
-            StatsResponse(
-                baseStat = 35,
-                effort = 0,
-                stat = StatsResponse.Stat("attack", "")
-            )
-        ),
+        stats = listOf(PokemonStat(name = "attack", baseStat = 35)),
         types = listOf("bug")
     )
     PokedexTheme {
-        PokemonDetailContent(uiState = PokemonDetailUiState(detailPokemon = detail, isFound = true))
+        PokemonDetailContent(uiState = PokemonDetailUiState(detailPokemon = detail))
     }
 }

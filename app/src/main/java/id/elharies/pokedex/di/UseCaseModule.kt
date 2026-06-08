@@ -4,8 +4,6 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import id.elharies.pokedex.domain.usecase.pokemon.PokemonInteractor
-import id.elharies.pokedex.domain.usecase.pokemon.PokemonUseCase
 import id.elharies.pokedex.domain.usecase.user.UserInteractor
 import id.elharies.pokedex.domain.usecase.user.UserUseCase
 
@@ -14,7 +12,4 @@ import id.elharies.pokedex.domain.usecase.user.UserUseCase
 abstract class UseCaseModule {
     @Binds
     abstract fun provideUserUseCase(userUseCase: UserInteractor): UserUseCase
-
-    @Binds
-    abstract fun providePokemonUseCase(pokemonUseCase: PokemonInteractor): PokemonUseCase
 }

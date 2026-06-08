@@ -26,4 +26,13 @@
     <string name="label_nama">Nama</string>
     <string name="pokemon_tidak_ditemukan">Pokemon Tidak Ditemukan</string>
     <string name="coba_lagi">Coba lagi</string>
+    <string name="nama">Nama</string>
+    <string name="member_sejak">Member Sejak</string>
+    <string name="logout">Logout</string>
+    <string name="no_connection">Tidak Ada Koneksi</string>
+    <string name="no_connection_message">Data Pokemon ini belum tersedia secara offline. Pastikan perangkat terhubung ke internet.</string>
+    <string name="retry">Coba Lagi</string>
+    <string name="not_found">Pokemon Tidak Ditemukan</string>
+    <string name="general_error">Terjadi Kesalahan</string>
+    <string name="back_to_list">Kembali ke Daftar</string>
 </resources>

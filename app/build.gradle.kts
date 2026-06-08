@@ -68,14 +68,9 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
-    // paging3
-    implementation(libs.androidx.paging.ktx)
-    implementation(libs.androidx.paging.compose)
-
     // room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    implementation(libs.androidx.room.paging)
     ksp(libs.androidx.room.compiler)
 
     // navigation3
@@ -94,6 +89,7 @@ dependencies {
 
     // el compose
     implementation(libs.elutility.compose)
+    implementation(libs.elutility.core)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

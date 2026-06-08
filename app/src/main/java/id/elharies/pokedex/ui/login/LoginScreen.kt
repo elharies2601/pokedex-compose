@@ -22,6 +22,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -59,6 +60,7 @@ import id.elharies.pokedex.component.LoadingDialog
 import id.elharies.pokedex.icons.ImagePokeBallGrey
 import id.elharies.pokedex.ui.theme.Grey
 import id.elharies.pokedex.ui.theme.LightGreen
+import id.elharies.pokedex.ui.theme.Red
 import id.elharies.pokedex.util.isValidEmail
 import kotlinx.coroutines.flow.Flow
 
@@ -190,6 +192,9 @@ private fun BodyLogin(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
 
     val focusManager = LocalFocusManager.current
 
@@ -197,7 +202,7 @@ private fun BodyLogin(
         derivedStateOf {
             email.isNotEmpty() &&
                     email.isValidEmail() &&
-                    password.isNotEmpty()
+                    password.isNotEmpty() && password.length >= 6
         }
     }
 
@@ -213,25 +218,69 @@ private fun BodyLogin(
                 .padding(16.dp)
         ) {
             Spacer(modifier = Modifier.height(24.dp))
-            OutlinedTextField(
-                email,
-                onValueChange = { email = it },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                label = { Text(stringResource(R.string.email)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-            )
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    email,
+                    onValueChange = { 
+                        email = it
+                        emailError = when {
+                            it.isEmpty() -> null
+                            !it.isValidEmail() -> "Format email tidak valid"
+                            else -> null
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    label = { Text(stringResource(R.string.email)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                    isError = emailError != null
+                )
+                if (emailError != null) {
+                    Text(
+                        text = emailError!!,
+                        color = Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                password,
-                onValueChange = { password = it },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                label = { Text(stringResource(R.string.password)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                visualTransformation = PasswordVisualTransformation(),
-            )
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    password,
+                    onValueChange = { 
+                        password = it
+                        passwordError = when {
+                            it.isEmpty() -> null
+                            it.length < 6 -> "Password minimal 6 karakter"
+                            else -> null
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    label = { Text(stringResource(R.string.password)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(
+                                painter = painterResource(if (passwordVisible) R.drawable.ic_eye else R.drawable.ic_eye_off),
+                                contentDescription = if (passwordVisible) "Sembunyikan password" else "Tampilkan password"
+                            )
+                        }
+                    },
+                    isError = passwordError != null
+                )
+                if (passwordError != null) {
+                    Text(
+                        text = passwordError!!,
+                        color = Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = { onLogin(email, password) },
@@ -241,15 +290,21 @@ private fun BodyLogin(
                     .height(48.dp),
                 enabled = areAllFilled
             ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_arrow_forward),
+                    contentDescription = null,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
                 Text(stringResource(R.string.title_login))
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             Text(
-                stringResource(R.string.atau), fontSize = 14.sp,
+                "Belum punya akun?",
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Normal,
-                color = Color.Black,
+                color = Grey,
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             OutlinedButton(
                 onClick = { onRegister() },
                 modifier = Modifier

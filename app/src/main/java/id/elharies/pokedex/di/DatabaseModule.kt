@@ -13,6 +13,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
+
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): PokeDatabase {
@@ -20,7 +21,9 @@ object DatabaseModule {
             context,
             PokeDatabase::class.java,
             "pokedex.db"
-        ).build()
+        )
+            .fallbackToDestructiveMigration(true)
+            .build()
     }
 
     @Provides
@@ -33,10 +36,5 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideRemoteKeysDao(database: PokeDatabase) = database.remoteKeysDao()
-
-    @Provides
-    @Singleton
     fun providePokemonDetailDao(database: PokeDatabase) = database.pokemonDetailDao()
-
 }

@@ -1,38 +1,33 @@
 package id.elharies.pokedex.domain.usecase.user
 
-import id.elharies.pokedex.data.local.entity.UserEntity
-import id.elharies.pokedex.data.mapper.toDomain
 import id.elharies.pokedex.domain.model.User
 import id.elharies.pokedex.domain.repository.SessionRepository
 import id.elharies.pokedex.domain.repository.UserRepository
 import id.elharies.pokedex.util.hashPassword
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class UserInteractor @Inject constructor(private val userRepository: UserRepository, private val sessionRepository: SessionRepository) : UserUseCase  {
-    override suspend fun register(
-        name: String,
-        email: String,
-        password: String
-    ): Result<String> {
+class UserInteractor @Inject constructor(
+    private val userRepository: UserRepository,
+    private val sessionRepository: SessionRepository
+) : UserUseCase {
+
+    override suspend fun register(name: String, email: String, password: String): Result<String> {
         val isEmailExists = userRepository.isEmailExists(email.lowercase())
         if (isEmailExists) {
             return Result.failure(Exception("Email sudah terdaftar, silahkan login menggunakan akunmu"))
         }
-
-        try {
-            userRepository.register(UserEntity(name = name, email = email.lowercase(), password = password.hashPassword()))
-            return Result.success("Berhasil mendaftarkan akun")
+        return try {
+            userRepository.register(
+                User(name = name, email = email.lowercase(), password = password.hashPassword())
+            )
+            Result.success("Berhasil mendaftarkan akun")
         } catch (e: Exception) {
-            return Result.failure(Exception("Gagal mendaftarkan akun\n${e.message}"))
+            Result.failure(Exception("Gagal mendaftarkan akun\n${e.message}"))
         }
     }
 
-    override suspend fun login(
-        email: String,
-        password: String
-    ): Result<Unit> {
+    override suspend fun login(email: String, password: String): Result<Unit> {
         val user = userRepository.login(email.lowercase(), password.hashPassword())
             ?: return Result.failure(Exception("Email atau password salah"))
         return try {
@@ -45,13 +40,9 @@ class UserInteractor @Inject constructor(private val userRepository: UserReposit
     }
 
     override suspend fun getUserById(id: Long): Result<User> {
-        val userEntity = userRepository.getUserById(id)
+        val user = userRepository.getUserById(id)
             ?: return Result.failure(Exception("User tidak ditemukan"))
-        return try {
-            Result.success(userEntity.toDomain())
-        } catch (e: Exception) {
-            Result.failure(Exception("User tidak ditemukan\n${e.message}"))
-        }
+        return Result.success(user)
     }
 
     override suspend fun getCurrentUserLogin(): Result<User> {
