@@ -22,7 +22,6 @@ coroutine = "1.8.1"
 kotlinSerialization = "2.2.21"
 kotlinxSerializationCore = "1.9.0"
 elLib = "1.0.0"
-material3 = "1.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -61,7 +60,6 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerializationCore" }
 elutility-compose = { module = "io.github.elharies2601:elutility-compose", version.ref = "elLib" }
 elutility-core = { module = "io.github.elharies2601:elutility-core", version.ref = "elLib" }
-androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 
 
 [plugins]
