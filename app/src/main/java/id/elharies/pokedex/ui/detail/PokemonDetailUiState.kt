@@ -7,5 +7,6 @@ import id.elharies.pokedex.domain.model.DetailPokemon
 data class PokemonDetailUiState(
     val isLoading: Boolean = false,
     val detailPokemon: DetailPokemon = DetailPokemon(),
-    val isFound: Boolean = false
+    val errorType: DetailErrorType? = null,
+    val errorMessage: String? = null
 )

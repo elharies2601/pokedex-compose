@@ -43,11 +43,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import id.elharies.pokedex.R
@@ -55,6 +58,7 @@ import id.elharies.pokedex.component.HeaderGeneralSection
 import id.elharies.pokedex.component.LoadingDialog
 import id.elharies.pokedex.ui.theme.Grey
 import id.elharies.pokedex.ui.theme.LightGreen
+import id.elharies.pokedex.ui.theme.Red
 import id.elharies.pokedex.util.isValidEmail
 import kotlinx.coroutines.flow.Flow
 
@@ -152,6 +156,10 @@ private fun BodyRegister(modifier: Modifier = Modifier, onRegister: (String, Str
     var nama by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var namaError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
 
     val focusManager = LocalFocusManager.current
 
@@ -159,7 +167,9 @@ private fun BodyRegister(modifier: Modifier = Modifier, onRegister: (String, Str
         derivedStateOf {
             email.isNotEmpty() &&
                     email.isValidEmail() &&
-                    password.isNotEmpty() && nama.isNotEmpty()
+                    password.isNotEmpty() && 
+                    password.length >= 6 &&
+                    nama.isNotEmpty()
         }
     }
 
@@ -175,35 +185,97 @@ private fun BodyRegister(modifier: Modifier = Modifier, onRegister: (String, Str
                 .padding(16.dp)
         ) {
             Spacer(modifier = Modifier.height(24.dp))
-            OutlinedTextField(
-                nama,
-                onValueChange = { nama = it },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                label = { Text(stringResource(R.string.label_nama)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-            )
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    nama,
+                    onValueChange = { 
+                        nama = it
+                        namaError = when {
+                            it.isEmpty() -> null
+                            it.length < 2 -> "Nama minimal 2 karakter"
+                            else -> null
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    label = { Text(stringResource(R.string.label_nama)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                    keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                    isError = namaError != null
+                )
+                if (namaError != null) {
+                    Text(
+                        text = namaError!!,
+                        color = Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                email,
-                onValueChange = { email = it },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                label = { Text(stringResource(R.string.email)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-            )
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    email,
+                    onValueChange = { 
+                        email = it
+                        emailError = when {
+                            it.isEmpty() -> null
+                            !it.isValidEmail() -> "Format email tidak valid"
+                            else -> null
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    label = { Text(stringResource(R.string.email)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                    isError = emailError != null
+                )
+                if (emailError != null) {
+                    Text(
+                        text = emailError!!,
+                        color = Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                password,
-                onValueChange = { password = it },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                label = { Text(stringResource(R.string.password)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                visualTransformation = PasswordVisualTransformation(),
-            )
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    password,
+                    onValueChange = { 
+                        password = it
+                        passwordError = when {
+                            it.isEmpty() -> null
+                            it.length < 6 -> "Password minimal 6 karakter"
+                            else -> null
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    label = { Text(stringResource(R.string.password)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(
+                                painter = painterResource(if (passwordVisible) R.drawable.ic_eye else R.drawable.ic_eye_off),
+                                contentDescription = if (passwordVisible) "Sembunyikan password" else "Tampilkan password"
+                            )
+                        }
+                    },
+                    isError = passwordError != null
+                )
+                if (passwordError != null) {
+                    Text(
+                        text = passwordError!!,
+                        color = Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = { onRegister(nama, email, password) },
@@ -215,6 +287,13 @@ private fun BodyRegister(modifier: Modifier = Modifier, onRegister: (String, Str
             ) {
                 Text(stringResource(R.string.title_register))
             }
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                "Sudah punya akun? Silakan login",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal,
+                color = Grey,
+            )
         }
     }
 }

@@ -1,12 +1,10 @@
 package id.elharies.pokedex.domain.repository
 
-import androidx.paging.PagingData
-import id.elharies.pokedex.data.local.entity.PokemonDetailEntity
-import id.elharies.pokedex.data.local.entity.PokemonEntity
-import kotlinx.coroutines.flow.Flow
+import id.elharies.pokedex.domain.model.DetailPokemon
+import id.elharies.pokedex.domain.model.Pokemon
 
 interface PokemonRepository {
-    fun getPokemonList(limit: Int, query: String?): Flow<PagingData<PokemonEntity>>
-    suspend fun getPokemonDetail(name: String): PokemonDetailEntity
-    suspend fun getPokemonDetail(id: Long): PokemonDetailEntity
+    suspend fun getPokemonList(limit: Int, offset: Int, query: String?): List<Pokemon>
+    suspend fun getPokemonDetail(name: String): DetailPokemon
+    suspend fun getPokemonDetail(id: Long): DetailPokemon
 }
